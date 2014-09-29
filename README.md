@@ -1,4 +1,4 @@
 JZoom
 =====
 
-简单版快捷版iscroll
+简单、快捷版iscroll
