@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html data-url-prepend="http://pub.idqqimg.com/qqmpmobile/coupon/">
+<head>
+    <title>JZoom</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <style>
+    body{
+    	height: 1000px
+    }
+	.wrap{
+		height: 300px;
+		position: relative;
+		width: 100%;
+		overflow: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	.proxy{
+		height: 100%;
+		width: 100%
+	}
+	.zoomer{
+		position: relative;
+		-webkit-transform-origin: 0% 0%;
+		-webkit-transform: translate(0px, 0px) scale(0.5) translateZ(0px); 
+		height: 100%;
+		width: 100%;
+		background-color: #f00
+	}
+    </style>
+</head>
+<body>
+	<div class="wrap">
+		<div class="proxy">
+			<div class="zoomer">Jdoi.net</div>
+		</div>
+	</div>
+	<div class="log"></div>
+	<script>
+	var $log = document.querySelector(".log");
+	var $wrap = document.querySelector(".wrap");
+	var $proxy = document.querySelector(".proxy");
+	var $zoomer = document.querySelector(".zoomer");
+
+	var currScale = 0;
+	var scale = 0.5;
+
+	$wrap.addEventListener("gesturechange", function (e) {
+		currScale = scale * e.scale;
+		$zoomer.style.webkitTransform = 'translate(0px, 0px) scale('+ currScale +') translateZ(0px)'
+	}, !!0);
+
+	$wrap.addEventListener("gestureend", function (e) {
+		scale = currScale;
+		$proxy.style.height = 100 * currScale +'%'
+		$proxy.style.width = 100 * currScale +'%'
+		// $wrap.
+		$log.innerText = $wrap.scrollHeight + ':' + $wrap.scrollWidth
+	}, !!0);
+
+	var startTopScroll;
+
+	$wrap.addEventListener("touchstart", function (e) {
+		var page = e.currentTarget;
+        startTopScroll = page.scrollTop;
+        if(startTopScroll <= 0)
+            page.scrollTop = 1;
+
+        if(startTopScroll + page.offsetHeight >= page.scrollHeight)
+            page.scrollTop = page.scrollHeight - page.offsetHeight - 1;
+	})
+
+	$wrap.addEventListener("touchmove", function (e) {
+		var page = e.currentTarget;
+        // alert(page.className)
+        // TODO cache element select
+        var content = page.querySelector('.proxy');
+        // Offset value have include content and border
+        if( content.offsetHeight <= parseInt(getComputedStyle(page).height) ){
+            // your element have overflow
+            return e.preventDefault();
+        }
+	}, !!0)
+	</script>
+</body>
+</html>
