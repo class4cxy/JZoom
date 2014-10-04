@@ -19,7 +19,7 @@
 	.proxy{
 		/*position: relative;*/
 		background-color: rgba(255,0,0,.2);
-		overflow: hidden;
+		/*overflow: hidden;*/
 		/*width: 1000px;*/
 	}
 	.zoomer{
@@ -81,7 +81,8 @@
 	$proxy.style.width = zoomerAttr.width.toFixed(2) +'px'
 
 	$wrap.addEventListener("gesturechange", function (e) {
-		currScale = scale * e.scale;
+		currScale = scale + e.scale-1;
+		// $log.innerText = e.scale
 		// if ( currScale >= maxScale || currScale <=minScale ) return;
 		// $log.innerText = e.pageX
 		$zoomer.style.webkitTransformOrigin = originX+"px, "+originY+"px"
@@ -98,23 +99,36 @@
 
 			// $log.innerText = zoomEndTranslateX +' : '+ zoomEndTranslateY
 			// alert(zoomEndTranslateX +' : '+ zoomEndTranslateY)
-			var X = wrapAttr.left-zoomerAttr.left-$wrap.scrollLeft;
-			var Y = wrapAttr.top-zoomerAttr.top-$wrap.scrollTop;
+			var X = parseInt(wrapAttr.left-zoomerAttr.left-$wrap.scrollLeft);
+			var Y = parseInt(wrapAttr.top-zoomerAttr.top-$wrap.scrollTop);
 
 			zoomEndTranslateX += X
 			zoomEndTranslateY += Y
 
+			// zoomEndTranslateX = zoomEndTranslateX.toFixed(2)
+			// zoomEndTranslateY = zoomEndTranslateY.toFixed(2)
+
 			// $zoomer.style.webkitTransitionDuration = '300ms';
 			$zoomer.style.webkitTransform = 'translate('+ zoomEndTranslateX +'px, '+ zoomEndTranslateY +'px) scale('+ scale +') translateZ(0px)';
 
-			$log.innerText = zoomEndTranslateX + ' : ' + zoomEndTranslateY
+			$log.innerText = X + ' : ' + Y
 
-			if ( X > 0 ) $wrap.scrollLeft = X;
-			if ( Y > 0 ) $wrap.scrollTop  = Y;
+			// if ( zoomEndTranslateX > 0 ) $wrap.scrollLeft = zoomEndTranslateX;
+			// if ( zoomEndTranslateY > 0 ) $wrap.scrollTop  = zoomEndTranslateY;
 
 			// 更新代理节点宽高
 			$proxy.style.height = zoomerAttr.height.toFixed(2) +'px'
 			$proxy.style.width = zoomerAttr.width.toFixed(2) +'px'
+
+			// reset wrap's scrollLeft & scrollTop
+			if ( $wrap.scrollHeight > $wrap.clientHeight ) {
+				if ( Y < 0 ) Y = 0;
+				$wrap.scrollTop += Y;
+			}
+			if ( $wrap.scrollWidth > $wrap.clientWidth ) {
+				if ( X < 0 ) X = 0;
+				$wrap.scrollLeft += X;
+			}
 		}
 
 		// currZoomEndTranslateX = zoomEndTranslateX
