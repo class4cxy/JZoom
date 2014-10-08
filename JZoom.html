@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html data-url-prepend="http://pub.idqqimg.com/qqmpmobile/coupon/">
+<html>
 <head>
     <title>JZoom</title>
     <meta charset="utf-8">
@@ -9,16 +9,21 @@
     body{
     	height: 1000px
     }
+    p{
+    	margin: 0;
+    	padding: 0
+    }
 	.wrap{
 		height: 300px;
 		background-color: #eee;
+		/*margin: 50px;*/
 		/*width: 100%;*/
 		overflow: auto;
 		-webkit-overflow-scrolling: touch;
 	}
 	.proxy{
 		/*position: relative;*/
-		background-color: rgba(255,0,0,.2);
+		/*background-color: rgba(255,0,0,.2);*/
 		/*overflow: hidden;*/
 		/*width: 1000px;*/
 	}
@@ -38,8 +43,7 @@
 	}
 	.log{
 		background-color: #ff0;
-		line-height: 30px;
-		height: 30px;
+		line-height: 16px;
 		color: #333
 	}
     </style>
@@ -51,12 +55,14 @@
 		</div>
 	</div>
 	<div class="log"></div>
+	<script src="http://192.168.100.3:8081/target/target-script-min.js#anonymous"></script>
+	<script type="text/javascript" src="http://zeptojs.com/zepto.min.js"></script>
 	<script>
 	// window.onerror = function (e) {
 		// $log.innerText(JSON.stringify(e.message))
 	// }
 
-	var $log = document.querySelector(".log");
+	var $log = $(".log");
 	var $wrap = document.querySelector(".wrap");
 	var $proxy = document.querySelector(".proxy");
 	var $zoomer = document.querySelector(".zoomer");
@@ -73,6 +79,9 @@
 	var zoomEndTranslateX = 0;
 	var zoomEndTranslateY = 0;
 
+	var originX = 0;
+	var originY = 0;
+
 	/*$zoomer.style.webkitTransformOrigin = "50px , 50px";
 	$zoomer.style.webkitTransform = 'translate(0px, 0px) scale(1.5) translateZ(0px)'*/
 
@@ -80,17 +89,123 @@
 	$proxy.style.height = zoomerAttr.height.toFixed(2) +'px'
 	$proxy.style.width = zoomerAttr.width.toFixed(2) +'px'
 
+	$wrap.addEventListener("gesturestart", function (e) {
+
+		// originX = Math.abs(e.touches[0].pageX + e.touches[1].pageX) / 2
+		// originY = Math.abs(e.touches[0].pageY + e.touches[1].pageY) / 2
+
+		/*for(var i in e) {
+			alert(i)
+			alert(e[i])
+		}*/
+		// $log.innerText = JSON.stringify(e.rotation)
+
+	}, !!0);
+
+	var hasAppendGestureChange;
 	$wrap.addEventListener("gesturechange", function (e) {
-		currScale = scale + e.scale-1;
+		currScale = scale * e.scale;
 		// $log.innerText = e.scale
 		// if ( currScale >= maxScale || currScale <=minScale ) return;
-		// $log.innerText = e.pageX
-		$zoomer.style.webkitTransformOrigin = originX+"px, "+originY+"px"
+		// $log.innerText = originX +' : '+ originY + ' | ' + $wrap.scrollLeft +' : '+ $wrap.scrollTop
+		hasTouchEnd = !!0;
+		if ( !hasAppendGestureChange ) {
+			hasAppendGestureChange = !!1;
+			// $log.append("<p>gesturechange</p>");
+			// $log.append("<p>"+ zoomEndTranslateX+"px "+zoomEndTranslateY+"px" +"</p>")
+			// $log.append("<p>"+ originX+" : "+originY +"</p>")
+		}
+		// console.log(zoomEndTranslateX+"px "+zoomEndTranslateY+"px")
+		// $zoomer.style.webkitTransformOrigin = originX+"% "+originY+"%"
+		$zoomer.style.webkitTransformOrigin = "50%  50%"
 		$zoomer.style.webkitTransform = 'translate('+zoomEndTranslateX+'px, '+zoomEndTranslateY+'px) scale('+ currScale +') translateZ(0px)'
 		// $zoomer.style.webkitTransform = 'scale('+ currScale +')'
 	}, !!0);
 
-	$wrap.addEventListener("gestureend", function (e) {
+	var hasTouchStart;
+	var hasTouchEnd = !!1;
+
+	$wrap.addEventListener("touchend", function (e) {
+		// console.log(e.touches)
+		if ( e.touches && e.touches.length === 0 && hasTouchStart ) {
+			
+			hasTouchStart = !!0;
+
+			// setTimeout(function () {
+
+				scale = currScale;
+
+				zoomerAttr = $zoomer.getBoundingClientRect();
+				wrapAttr = $wrap.getBoundingClientRect();
+
+				// $log.innerText = zoomEndTranslateX +' : '+ zoomEndTranslateY
+				// alert(zoomEndTranslateX +' : '+ zoomEndTranslateY)
+				var X = parseInt(wrapAttr.left-zoomerAttr.left-$wrap.scrollLeft);
+				var Y = parseInt(wrapAttr.top-zoomerAttr.top-$wrap.scrollTop);
+
+				zoomEndTranslateX += X
+				zoomEndTranslateY += Y
+
+				// zoomEndTranslateX = zoomEndTranslateX.toFixed(2)
+				// zoomEndTranslateY = zoomEndTranslateY.toFixed(2)
+				// console.log(zoomEndTranslateX+'|||'+zoomEndTranslateY)
+
+				// $zoomer.style.webkitTransitionDuration = '300ms';
+				$zoomer.style.webkitTransform = 'translate('+ zoomEndTranslateX +'px, '+ zoomEndTranslateY +'px) scale('+ scale +') translateZ(0px)';
+
+				// $log.innerText = X + ' : ' + Y
+				// $log.append("<p>===gestureend===</p>");
+				// console.log(zoomEndTranslateX+", "+ zoomEndTranslateY)
+
+				// if ( zoomEndTranslateX > 0 ) $wrap.scrollLeft = zoomEndTranslateX;
+				// if ( zoomEndTranslateY > 0 ) $wrap.scrollTop  = zoomEndTranslateY;
+
+				// 更新代理节点宽高
+				// console.log(X)
+				// console.log(Y)
+				// console.log($wrap.scrollWidth)
+				$proxy.style.height = zoomerAttr.height.toFixed(2) +'px'
+				$proxy.style.width = zoomerAttr.width.toFixed(2) +'px'
+				// console.log($wrap.scrollWidth)
+
+				// reset wrap's scrollLeft & scrollTop
+				// setTimeout(function () {
+				console.log($wrap.scrollLeft)
+				// console.log(X)
+
+				// $proxy.style.webkitTransform = "translate("+ (-zoomEndTranslateX) +"px, "+ (-zoomEndTranslateY) +"px) translateZ(0px)"
+
+				if ( $wrap.scrollHeight > $wrap.clientHeight ) {
+					// setTimeout(function () {
+						$wrap.scrollTop = 0
+						$wrap.scrollTop = Y < 0 ? 0 : Y;
+						// $wrap.scrollTop = zoomEndTranslateY
+					// var wrapScrollTop = $wrap.scrollTop;
+					// $wrap.scrollTop = wrapScrollTop + Y < 0 ? 0 : wrapScrollTop + Y;
+					// },0)
+				}
+				if ( $wrap.scrollWidth > $wrap.clientWidth ) {
+					// setTimeout(function () {
+						$wrap.scrollLeft = 0
+						$wrap.scrollLeft = X < 0 ? 0 : X;
+					// var wrapScrollLeft = $wrap.scrollLeft;
+					// $wrap.scrollLeft = wrapScrollLeft + X < 0 ? 0 : wrapScrollLeft + X;
+						// console.log($wrap.scrollLeft)
+					// },0)
+				}
+				console.log($wrap.scrollLeft)
+
+				// setTimeout(function() {
+					hasTouchEnd = !!1;
+				// },100)
+
+			// }, 500)
+
+		}
+	}, !!0);
+
+	/*$wrap.addEventListener("gestureend", function (e) {
+		console.log(e)
 		if ( currScale !== scale ) {
 			scale = currScale;
 
@@ -107,46 +222,57 @@
 
 			// zoomEndTranslateX = zoomEndTranslateX.toFixed(2)
 			// zoomEndTranslateY = zoomEndTranslateY.toFixed(2)
+			// console.log(zoomEndTranslateX+'|||'+zoomEndTranslateY)
 
 			// $zoomer.style.webkitTransitionDuration = '300ms';
 			$zoomer.style.webkitTransform = 'translate('+ zoomEndTranslateX +'px, '+ zoomEndTranslateY +'px) scale('+ scale +') translateZ(0px)';
 
-			$log.innerText = X + ' : ' + Y
+			// $log.innerText = X + ' : ' + Y
+			// $log.append("<p>===gestureend===</p>");
+			// console.log(zoomEndTranslateX+", "+ zoomEndTranslateY)
 
 			// if ( zoomEndTranslateX > 0 ) $wrap.scrollLeft = zoomEndTranslateX;
 			// if ( zoomEndTranslateY > 0 ) $wrap.scrollTop  = zoomEndTranslateY;
 
 			// 更新代理节点宽高
+			// console.log(zoomerAttr.height)
+			// console.log(zoomerAttr.width)
 			$proxy.style.height = zoomerAttr.height.toFixed(2) +'px'
 			$proxy.style.width = zoomerAttr.width.toFixed(2) +'px'
 
 			// reset wrap's scrollLeft & scrollTop
+			// setTimeout(function () {
+			console.log($wrap.scrollLeft)
 			if ( $wrap.scrollHeight > $wrap.clientHeight ) {
-				if ( Y < 0 ) Y = 0;
-				$wrap.scrollTop += Y;
+				var wrapScrollTop = $wrap.scrollTop;
+				$wrap.scrollTop = wrapScrollTop + Y < 0 ? 0 : wrapScrollTop + Y;
+				// if ( Y < 0 ) Y = 0;
+				// $wrap.scrollTop += Y;
 			}
 			if ( $wrap.scrollWidth > $wrap.clientWidth ) {
-				if ( X < 0 ) X = 0;
-				$wrap.scrollLeft += X;
+				var wrapScrollLeft = $wrap.scrollLeft;
+				$wrap.scrollLeft = wrapScrollLeft + X < 0 ? 0 : wrapScrollLeft + X;
+				// if ( $wrap.scrollLeft + X < 0 ) $wrap.scrollLeft = 0;
+				// if ( X < 0 ) X = 0;
+				// $wrap.scrollLeft += X;
 			}
+			console.log($wrap.scrollLeft)
+			// console.log("gestureend")
+			// }, 0)
 		}
 
 		// currZoomEndTranslateX = zoomEndTranslateX
 		// currZoomEndTranslateY = zoomEndTranslateY
-
-		/*setTimeout(function () {
-			$log.innerText = JSON.stringify($zoomer.getBoundingClientRect())
-		}, 400)*/
 		
-	}, !!0);
+	}, !!0);*/
 
 	// $wrap.addEventListener("gestureend", function (e) {}, !!0)
 
 	var startTopScroll;
 	var startX;
 	var startY;
-	var originX;
-	var originY;
+	var currX;
+	var currY;
 
 	$wrap.addEventListener("touchstart", function (e) {
 		var page = e.currentTarget;
@@ -164,22 +290,38 @@
         if(startTopScroll + page.offsetHeight >= page.scrollHeight)
             page.scrollTop = page.scrollHeight - page.offsetHeight - 1;
 
+        // $log.innerText = e.touches.length
+        if ( e.touches.length > 1 ) {
+        	// zoomerAttr = $zoomer.getBoundingClientRect();
+        	// $log.innerText = $zoomer.getBoundingClientRect().left +' | '+ $wrap.scrollLeft;
+        	// originX = (Math.abs(e.touches[0].pageX + e.touches[1].pageX) / 2 + $wrap.scrollLeft) / zoomerAttr.width *100
+        	// originY = (Math.abs(e.touches[0].pageY + e.touches[1].pageY) / 2 + $wrap.scrollTop) / zoomerAttr.height *100
+        	// console.log(e.touches[0].pageX, e.touches[1].pageX)
+        	// console.log(e.touches[0].pageY, e.touches[1].pageY)
+        	hasTouchStart = !!1;
+        	hasAppendGestureChange = !!0;
+        	// $log.append("<p>===gesturestart===</p>");
+        	// console.log("originX:"+ originX +", originY:"+ originY);
+        	// console.log(zoomerAttr.width, zoomerAttr.height)
+        	// $log.innerText = originX +" : "+ originY
+        }
         // reset webkitTransitionDuration
         // $zoomer.style.webkitTransitionDuration = '';
 	})
 
 	$wrap.addEventListener("touchmove", function (e) {
+
+		// when into zoom status
+		// you had to prevent it
+		if ( !hasTouchEnd ) return e.preventDefault();
+
 		var firstTouch = e.touches[0];
-		// var page = e.currentTarget;
-        // alert(page.className)
-        // TODO cache element select
-        // var content = page.querySelector('.proxy');
-        originX = firstTouch.pageX
-        originY = firstTouch.pageY
+        currX = firstTouch.pageX
+        currY = firstTouch.pageY
 
         // Offset value have include content and border
         // $log.innerText = firstTouch.pageX;
-        if (Math.abs(startX-originX) < Math.abs(startY-originY)) {
+        if (Math.abs(startX-currX) < Math.abs(startY-currY)) {
         	if($proxy.offsetHeight <= wrapAttr.height) {
 	            // your element have overflow
 	            return e.preventDefault();
